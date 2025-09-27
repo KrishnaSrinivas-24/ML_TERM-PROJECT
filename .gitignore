@@ -16,3 +16,6 @@ Ignore IDE/editor-specific files
 
 Ignore temporary files created by notebooks
 .ipynb_checkpoints/
+
+# Large data files (if any are not needed for the app)
+# data/
