@@ -1,2 +1,1 @@
-// filepath: e:\GITAM SEMESTERS\5th-sem\MLA - CSEN3261\ML_TERM-PROJECT\ML_TERM-PROJECT\packages.txt
 libgl1-mesa-glx
