@@ -1,0 +1,18 @@
+Ignore the Python virtual environment
+.venv/
+venv/
+env/
+
+Ignore Python cache files
+pycache/
+*.pyc
+*.pyo
+*.pyd
+
+Ignore IDE/editor-specific files
+.vscode/
+.idea/
+*.DS_Store
+
+Ignore temporary files created by notebooks
+.ipynb_checkpoints/
