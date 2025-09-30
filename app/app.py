@@ -6,7 +6,7 @@ import joblib
 import os
 import tensorflow as tf
 
-# --- Configuration ---
+# -------------------- Page Configuration --------------------
 st.set_page_config(
     page_title="Satellite Image Classifier",
     page_icon="🛰️",
@@ -14,138 +14,139 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
-# --- Helper Functions ---
-def preprocess_image(image):
+# -------------------- Helper Functions --------------------
+def preprocess_image(image: Image.Image) -> np.ndarray:
     """
-    Takes a user-uploaded image, processes it to match the training data format.
+    Convert uploaded image into a feature vector suitable for ML models.
+    Steps:
+    1. Ensure RGB format
+    2. Resize to 64x64
+    3. Normalize
+    4. Compute color histograms (R, G, B)
+    5. Flatten + reshape for model
     """
-    # Convert image to a NumPy array
     img_array = np.array(image)
-    
-    # Ensure image is 3-channel RGB
-    if len(img_array.shape) == 2: # Grayscale
+
+    # Handle grayscale and RGBA
+    if len(img_array.shape) == 2:
         img_array = cv2.cvtColor(img_array, cv2.COLOR_GRAY2RGB)
-    elif img_array.shape[2] == 4: # RGBA
+    elif img_array.shape[2] == 4:
         img_array = cv2.cvtColor(img_array, cv2.COLOR_RGBA2RGB)
 
-    # Resize and Normalize
+    # Resize + Normalize
     resized_img = cv2.resize(img_array, (64, 64))
-    normalized_img = resized_img.astype('float32') / 255.0
+    normalized_img = resized_img.astype("float32") / 255.0
 
-    # Calculate color histograms for each channel
-    hist_r = cv2.calcHist([normalized_img], [0], None, [32], [0, 1])
-    hist_g = cv2.calcHist([normalized_img], [1], None, [32], [0, 1])
-    hist_b = cv2.calcHist([normalized_img], [2], None, [32], [0, 1])
-    
-    # Concatenate histograms to create the final feature vector
-    feature_vector = np.concatenate((hist_r, hist_g, hist_b)).flatten()
-    
-    # Return as a 2D array for the model
+    # Compute histograms
+    hist_features = []
+    for channel in range(3):
+        hist = cv2.calcHist([normalized_img], [channel], None, [32], [0, 1])
+        hist_features.append(hist)
+
+    feature_vector = np.concatenate(hist_features).flatten()
     return feature_vector.reshape(1, -1)
 
-# --- Load All Models and Resources ---
+
 @st.cache_resource
 def load_resources():
     """
-    Loads the PCA transformer, all five models, and class names.
-    This function is cached to prevent reloading on every interaction.
+    Loads PCA, trained models, and class names.
+    Cached for performance.
     """
-    # Define paths relative to this script file
     base_path = os.path.dirname(__file__)
-    models_path = os.path.join(base_path, '..', 'models')
-    results_path = os.path.join(base_path, '..', 'results')
+    models_path = os.path.join(base_path, "..", "models")
+    results_path = os.path.join(base_path, "..", "results")
 
-    # Load PCA object
-    pca_path = os.path.join(models_path, 'pca.joblib')
+    # PCA
+    pca_path = os.path.join(models_path, "pca.joblib")
+    if not os.path.exists(pca_path):
+        raise FileNotFoundError("PCA file missing. Run training notebook first.")
     pca = joblib.load(pca_path)
-    
-    # Load class names
-    class_names_path = os.path.join(results_path, 'class_names.npy')
+
+    # Class Names
+    class_names_path = os.path.join(results_path, "class_names.npy")
+    if not os.path.exists(class_names_path):
+        raise FileNotFoundError("Class names file missing. Run training notebook first.")
     class_names = np.load(class_names_path, allow_pickle=True)
 
-    # Define model names and their corresponding filenames
-    models = {}
+    # Models
     model_files = {
         "Random Forest": "random_forest.joblib",
         "Support Vector Machine": "support_vector_machine.joblib",
         "Gradient Boosting": "gradient_boosting.joblib",
         "Logistic Regression": "logistic_regression.joblib",
-        "Neural Network (MLP)": "neural_network_mlp.h5"
+        "Neural Network (MLP)": "neural_network_mlp.h5",
     }
 
-    # Loop through and load each model
+    models = {}
     for name, file in model_files.items():
         path = os.path.join(models_path, file)
-        if os.path.exists(path):
-            if file.endswith('.h5'):
-                # Load Keras/TensorFlow model
-                models[name] = tf.keras.models.load_model(path)
-            else:
-                # Load scikit-learn model
-                models[name] = joblib.load(path)
-    
+        if not os.path.exists(path):
+            st.warning(f"⚠️ {name} model file not found. Skipping...")
+            continue
+        if file.endswith(".h5"):
+            models[name] = tf.keras.models.load_model(path)
+        else:
+            models[name] = joblib.load(path)
+
+    if not models:
+        raise FileNotFoundError("No models found in the models directory.")
+
     return pca, models, class_names
 
-# --- Main App Logic ---
-try:
-    # Load all necessary files when the app starts
-    pca, models, class_names = load_resources()
-except FileNotFoundError as e:
-    st.error(f"Error loading resources: {e}. Please ensure you have run the `model_training.ipynb` notebook and all required files are in their correct directories (`/models` and `/results`).")
-    st.stop()
 
-
-# --- Streamlit App UI ---
+# -------------------- Main App --------------------
 st.title("🛰️ Satellite Image Land Use Classifier")
-st.markdown("""
-Welcome! Upload a satellite image and select a machine learning model. The app will predict the image's land use category.
-""")
-
-uploaded_file = st.file_uploader(
-    "Choose a satellite image...",
-    type=["jpg", "jpeg", "png"]
+st.markdown(
+    """
+    Upload a **satellite image** and choose a machine learning model.  
+    The app will classify the image into its land use category.
+    """
 )
 
-if uploaded_file is not None and models:
-    # Display the uploaded image
-    image = Image.open(uploaded_file)
-    st.image(image, caption='Uploaded Image')
-    
-    # Create a dropdown menu for the user to select a model
-    model_choice = st.selectbox(
-        "Choose a model to make the prediction:",
-        # Use the keys from our loaded models dictionary
-        list(models.keys())
-    )
+try:
+    pca, models, class_names = load_resources()
+except FileNotFoundError as e:
+    st.error(str(e))
+    st.stop()
 
-    # Create a button to trigger the classification
-    if st.button(f"Classify with {model_choice}"):
-        selected_model = models[model_choice]
-        
-        with st.spinner(f'Analyzing the image with {model_choice}...'):
+uploaded_file = st.file_uploader("📂 Upload a satellite image", type=["jpg", "jpeg", "png"])
+
+if uploaded_file:
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
+
+    model_choice = st.selectbox("🔍 Select a model for prediction", list(models.keys()))
+
+    if st.button(f"🚀 Classify with {model_choice}"):
+        with st.spinner(f"Analyzing with {model_choice}..."):
             try:
-                # Process the user's image through the exact same pipeline
                 features = preprocess_image(image)
                 features_pca = pca.transform(features)
-                
-                # Make a prediction based on the model type
-                if isinstance(selected_model, tf.keras.Model):
-                    # Keras model predicts probabilities for all classes
-                    prediction_probs = selected_model.predict(features_pca)
-                    prediction_index = np.argmax(prediction_probs)
-                else:
-                    # Scikit-learn model predicts a single class index
-                    prediction_index = selected_model.predict(features_pca)[0]
 
-                # Get the human-readable class name
+                model = models[model_choice]
+
+                if isinstance(model, tf.keras.Model):
+                    prediction_probs = model.predict(features_pca)
+                    prediction_index = np.argmax(prediction_probs)
+                    confidence = float(np.max(prediction_probs)) * 100
+                else:
+                    prediction_index = model.predict(features_pca)[0]
+                    # For scikit-learn models, check if `predict_proba` exists
+                    confidence = (
+                        model.predict_proba(features_pca).max() * 100
+                        if hasattr(model, "predict_proba")
+                        else None
+                    )
+
                 prediction_class = class_names[prediction_index]
-                
-                # Display the result
-                st.success(f"**Prediction from {model_choice}: {prediction_class}**")
+
+                st.success(f"✅ Prediction: **{prediction_class}**")
+                if confidence:
+                    st.info(f"Confidence: {confidence:.2f}%")
 
             except Exception as e:
-                st.error(f"An error occurred during prediction: {e}")
+                st.error(f"❌ Error during prediction: {e}")
 
-elif not models:
-    st.error("No trained models were found. Please run the `model_training.ipynb` notebook and ensure all model files are in the `models` directory.")
-
+else:
+    st.info("👆 Upload an image to get started.")
