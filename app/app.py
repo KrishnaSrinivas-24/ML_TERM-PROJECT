@@ -15,7 +15,9 @@ st.set_page_config(
 )
 
 # -------------------- Custom CSS --------------------
-st.markdown("""
+def get_custom_css(dark_mode=True):
+    if dark_mode:
+        return """
 <style>
     .main-header {
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
@@ -53,15 +55,17 @@ st.markdown("""
         background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
     }
     .model-card {
-        background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
         padding: 1rem;
         border-radius: 10px;
         margin: 0.5rem 0;
-        border: 1px solid #d1e7dd;
+        border: 1px solid #667eea;
         transition: all 0.2s ease;
     }
     .model-card:hover {
-        background: linear-gradient(135deg, #e8f2ff 0%, #d1e7dd 100%);
+        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        border-color: #7c3aed;
     }
     .result-success {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -130,8 +134,192 @@ st.markdown("""
         margin-top: 3rem;
         border-top: 3px solid #667eea;
     }
+    .sidebar-section {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        border: 1px solid #667eea;
+    }
+    .category-item {
+        background: rgba(102, 126, 234, 0.1);
+        color: white;
+        padding: 0.5rem;
+        margin: 0.2rem 0;
+        border-radius: 5px;
+        border-left: 3px solid #667eea;
+    }
+    .mode-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 999;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
 </style>
-""", unsafe_allow_html=True)
+"""
+    else:
+        return """
+<style>
+    .main-header {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    .main-header h1 {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-weight: 700;
+    }
+    .main-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    .feature-card {
+        background: white;
+        color: #333;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        margin: 1rem 0;
+        border-left: 4px solid #667eea;
+        transition: transform 0.2s ease;
+    }
+    .feature-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.2);
+    }
+    .model-card {
+        background: white;
+        color: #333;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 0.5rem 0;
+        border: 1px solid #667eea;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+    }
+    .model-card:hover {
+        background: #f8f9ff;
+        border-color: #7c3aed;
+    }
+    .result-success {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin: 1.5rem 0;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    }
+    .result-success h2 {
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+    .confidence-bar {
+        background: #f0f0f0;
+        border-radius: 15px;
+        padding: 0.3rem;
+        margin: 1rem 0;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    .stSelectbox > div > div {
+        border-radius: 10px;
+        border: 2px solid #667eea;
+    }
+    .uploadedFile {
+        border: 2px dashed #667eea;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        background: #f8f9ff;
+    }
+    .metric-container {
+        background: white;
+        color: #333;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.2s ease;
+        border: 1px solid #e0e0e0;
+    }
+    .metric-container:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.2);
+    }
+    .footer {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 2rem;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 3rem;
+        border-top: 3px solid #667eea;
+    }
+    .sidebar-section {
+        background: white;
+        color: #333;
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 1rem 0;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    .category-item {
+        background: #f8f9ff;
+        color: #333;
+        padding: 0.5rem;
+        margin: 0.2rem 0;
+        border-radius: 5px;
+        border-left: 3px solid #667eea;
+    }
+    .mode-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 999;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+</style>
+"""
+
+st.markdown(get_custom_css(dark_mode=st.session_state.get('dark_mode', True)), unsafe_allow_html=True)
 
 # -------------------- Helper Functions --------------------
 def get_confidence_color(confidence):
@@ -235,6 +423,17 @@ def load_resources():
 
 
 # -------------------- Main App --------------------
+# Initialize session state for dark mode
+if 'dark_mode' not in st.session_state:
+    st.session_state.dark_mode = True
+
+# Dark/Light mode toggle
+col_toggle1, col_toggle2, col_toggle3 = st.columns([6, 1, 1])
+with col_toggle3:
+    if st.button("🌙" if st.session_state.dark_mode else "☀️", help="Toggle Dark/Light Mode"):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+        st.rerun()
+
 # Header Section
 st.markdown("""
 <div class="main-header">
@@ -280,7 +479,12 @@ except FileNotFoundError as e:
 
 # Sidebar for model information
 with st.sidebar:
-    st.markdown("## 🤖 Available Models")
+    st.markdown("""
+    <div class="sidebar-section">
+        <h2 style="margin-top: 0;">🤖 Available Models</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
     for model_name in models.keys():
         st.markdown(f"""
         <div class="model-card">
@@ -290,9 +494,25 @@ with st.sidebar:
         """, unsafe_allow_html=True)
     
     st.markdown("---")
-    st.markdown("## 📊 Land Use Categories")
-    for i, class_name in enumerate(class_names):
-        st.markdown(f"**{i+1}.** {class_name}")
+    
+    st.markdown("""
+    <div class="sidebar-section">
+        <h2 style="margin-top: 0;">📊 Land Use Categories</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    categories = [
+        "Annual Crop", "Forest", "Herbaceous Vegetation", "Highway", 
+        "Industrial", "Pasture", "Permanent Crop", "Residential", 
+        "River", "Sea Lake"
+    ]
+    
+    for i, class_name in enumerate(categories):
+        st.markdown(f"""
+        <div class="category-item">
+            <strong>{i+1}.</strong> {class_name}
+        </div>
+        """, unsafe_allow_html=True)
 
 # Main content area
 st.markdown("## � Upload Your Satellite Image")
