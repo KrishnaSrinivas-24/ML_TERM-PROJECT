@@ -10,11 +10,142 @@ import tensorflow as tf
 st.set_page_config(
     page_title="Satellite Image Classifier",
     page_icon="🛰️",
-    layout="centered",
-    initial_sidebar_state="auto"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
+# -------------------- Custom CSS --------------------
+st.markdown("""
+<style>
+    .main-header {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    .main-header h1 {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-weight: 700;
+    }
+    .main-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    .feature-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin: 1rem 0;
+        border-left: 4px solid #667eea;
+        transition: transform 0.2s ease;
+    }
+    .feature-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+    }
+    .model-card {
+        background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 0.5rem 0;
+        border: 1px solid #d1e7dd;
+        transition: all 0.2s ease;
+    }
+    .model-card:hover {
+        background: linear-gradient(135deg, #e8f2ff 0%, #d1e7dd 100%);
+    }
+    .result-success {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin: 1.5rem 0;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    }
+    .result-success h2 {
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+    .confidence-bar {
+        background: #f0f0f0;
+        border-radius: 15px;
+        padding: 0.3rem;
+        margin: 1rem 0;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    .stSelectbox > div > div {
+        border-radius: 10px;
+        border: 2px solid #667eea;
+    }
+    .uploadedFile {
+        border: 2px dashed #667eea;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        background: #f8f9ff;
+    }
+    .metric-container {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        text-align: center;
+    }
+    .footer {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 2rem;
+        border-radius: 10px;
+        text-align: center;
+        margin-top: 3rem;
+        border-top: 3px solid #667eea;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # -------------------- Helper Functions --------------------
+def get_confidence_color(confidence):
+    """Return color based on confidence level."""
+    if confidence >= 80:
+        return "#28a745"  # Green
+    elif confidence >= 60:
+        return "#ffc107"  # Yellow
+    else:
+        return "#dc3545"  # Red
+
+def create_confidence_bar(confidence):
+    """Create a visual confidence bar."""
+    return f"""
+    <div style="background: #f0f0f0; border-radius: 10px; padding: 3px; margin: 10px 0;">
+        <div style="background: {get_confidence_color(confidence)}; width: {confidence}%; 
+                    height: 20px; border-radius: 7px; display: flex; align-items: center; 
+                    justify-content: center; color: white; font-weight: bold;">
+            {confidence:.1f}%
+        </div>
+    </div>
+    """
 def preprocess_image(image: Image.Image) -> np.ndarray:
     """
     Convert uploaded image into a feature vector suitable for ML models.
@@ -96,57 +227,212 @@ def load_resources():
 
 
 # -------------------- Main App --------------------
-st.title("🛰️ Satellite Image Land Use Classifier")
-st.markdown(
-    """
-    Upload a **satellite image** and choose a machine learning model.  
-    The app will classify the image into its land use category.
-    """
-)
+# Header Section
+st.markdown("""
+<div class="main-header">
+    <h1>🛰️ Satellite Image Land Use Classifier</h1>
+    <p>AI-Powered Land Use Classification using Advanced Machine Learning</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Introduction Section
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("""
+    <div class="feature-card">
+        <h3>🎯 High Accuracy</h3>
+        <p>State-of-the-art ML models trained on satellite imagery data</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+    <div class="feature-card">
+        <h3>🚀 Fast Processing</h3>
+        <p>Get instant predictions with optimized algorithms</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+    <div class="feature-card">
+        <h3>🌍 Multiple Classes</h3>
+        <p>Classify various land use types from satellite images</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 try:
     pca, models, class_names = load_resources()
+    st.success(f"✅ Successfully loaded {len(models)} models and PCA transformer")
 except FileNotFoundError as e:
-    st.error(str(e))
+    st.error(f"❌ {str(e)}")
+    st.info("💡 Please run the training notebook first to generate the required model files.")
     st.stop()
 
-uploaded_file = st.file_uploader("📂 Upload a satellite image", type=["jpg", "jpeg", "png"])
+# Sidebar for model information
+with st.sidebar:
+    st.markdown("## 🤖 Available Models")
+    for model_name in models.keys():
+        st.markdown(f"""
+        <div class="model-card">
+            <strong>{model_name}</strong><br>
+            <small>Ready for prediction</small>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    st.markdown("## 📊 Land Use Categories")
+    for i, class_name in enumerate(class_names):
+        st.markdown(f"**{i+1}.** {class_name}")
+
+# Main content area
+st.markdown("## � Upload Your Satellite Image")
+uploaded_file = st.file_uploader(
+    "Choose a satellite image...", 
+    type=["jpg", "jpeg", "png"],
+    help="Upload a satellite image in JPG, JPEG, or PNG format"
+)
 
 if uploaded_file:
+    # Display uploaded image
     image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    
+    col1, col2 = st.columns([1, 1])
+    
+    with col1:
+        st.markdown("### 🖼️ Uploaded Image")
+        st.image(image, caption="Your satellite image", use_column_width=True)
+        
+        # Image information
+        st.markdown("**Image Details:**")
+        st.write(f"📏 **Size:** {image.size[0]} x {image.size[1]} pixels")
+        st.write(f"🎨 **Mode:** {image.mode}")
+        st.write(f"📁 **Format:** {image.format}")
+    
+    with col2:
+        st.markdown("### 🔧 Model Selection")
+        model_choice = st.selectbox(
+            "Choose your AI model:",
+            list(models.keys()),
+            help="Select a machine learning model for classification"
+        )
+        
+        # Model description
+        model_descriptions = {
+            "Random Forest": "🌲 Ensemble method using multiple decision trees",
+            "Support Vector Machine": "⚡ High-performance classification algorithm",
+            "Gradient Boosting": "📈 Advanced boosting technique for high accuracy",
+            "Logistic Regression": "📊 Linear classification with probabilistic output",
+            "Neural Network (MLP)": "🧠 Deep learning multi-layer perceptron"
+        }
+        
+        st.info(f"**{model_choice}:** {model_descriptions.get(model_choice, 'Advanced ML model')}")
+        
+        if st.button(f"🚀 Classify with {model_choice}", use_container_width=True):
+            with st.spinner(f"🔄 Analyzing image with {model_choice}..."):
+                try:
+                    features = preprocess_image(image)
+                    features_pca = pca.transform(features)
 
-    model_choice = st.selectbox("🔍 Select a model for prediction", list(models.keys()))
+                    model = models[model_choice]
 
-    if st.button(f"🚀 Classify with {model_choice}"):
-        with st.spinner(f"Analyzing with {model_choice}..."):
-            try:
-                features = preprocess_image(image)
-                features_pca = pca.transform(features)
+                    if isinstance(model, tf.keras.Model):
+                        prediction_probs = model.predict(features_pca, verbose=0)
+                        prediction_index = np.argmax(prediction_probs)
+                        confidence = float(np.max(prediction_probs)) * 100
+                    else:
+                        prediction_index = model.predict(features_pca)[0]
+                        confidence = (
+                            model.predict_proba(features_pca).max() * 100
+                            if hasattr(model, "predict_proba")
+                            else None
+                        )
 
-                model = models[model_choice]
+                    prediction_class = class_names[prediction_index]
 
-                if isinstance(model, tf.keras.Model):
-                    prediction_probs = model.predict(features_pca)
-                    prediction_index = np.argmax(prediction_probs)
-                    confidence = float(np.max(prediction_probs)) * 100
-                else:
-                    prediction_index = model.predict(features_pca)[0]
-                    # For scikit-learn models, check if `predict_proba` exists
-                    confidence = (
-                        model.predict_proba(features_pca).max() * 100
-                        if hasattr(model, "predict_proba")
-                        else None
-                    )
+                    # Results section
+                    st.markdown("---")
+                    st.markdown("## 🎯 Classification Results")
+                    
+                    # Main result card
+                    st.markdown(f"""
+                    <div class="result-success">
+                        <h2>🏆 Prediction: {prediction_class}</h2>
+                        <p>Model: {model_choice}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    if confidence:
+                        st.markdown("### 📊 Confidence Level")
+                        st.markdown(create_confidence_bar(confidence), unsafe_allow_html=True)
+                        
+                        # Confidence interpretation
+                        if confidence >= 80:
+                            st.success(f"🎯 **High Confidence**: The model is very confident about this prediction ({confidence:.1f}%)")
+                        elif confidence >= 60:
+                            st.warning(f"⚠️ **Medium Confidence**: The model has moderate confidence ({confidence:.1f}%)")
+                        else:
+                            st.error(f"🤔 **Low Confidence**: The model has low confidence ({confidence:.1f}%)")
 
-                prediction_class = class_names[prediction_index]
-
-                st.success(f"✅ Prediction: **{prediction_class}**")
-                if confidence:
-                    st.info(f"Confidence: {confidence:.2f}%")
-
-            except Exception as e:
-                st.error(f"❌ Error during prediction: {e}")
+                except Exception as e:
+                    st.error(f"❌ **Error during prediction:** {str(e)}")
+                    st.info("💡 Please try uploading a different image or contact support.")
 
 else:
-    st.info("👆 Upload an image to get started.")
+    # Welcome message when no image is uploaded
+    st.markdown("### 👋 Welcome!")
+    st.info("� **Get Started:** Upload a satellite image using the file uploader above to begin classification.")
+    
+    # Sample images section
+    st.markdown("### 🌟 Sample Classifications")
+    sample_col1, sample_col2, sample_col3 = st.columns(3)
+    
+    with sample_col1:
+        st.markdown("""
+        <div class="feature-card">
+            <h4>🌾 Agricultural Areas</h4>
+            <p>Croplands, pastures, and farming regions</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with sample_col2:
+        st.markdown("""
+        <div class="feature-card">
+            <h4>🌲 Forest Regions</h4>
+            <p>Dense forests and woodland areas</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with sample_col3:
+        st.markdown("""
+        <div class="feature-card">
+            <h4>🏘️ Urban Areas</h4>
+            <p>Residential, industrial, and highway regions</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+# Footer
+st.markdown("---")
+st.markdown("""
+<div class="footer">
+    <h3>🛰️ Satellite Image Classifier</h3>
+    <p><strong>Powered by Advanced Machine Learning & AI</strong></p>
+    <p>Built with ❤️ using Streamlit, TensorFlow, and Scikit-learn</p>
+    <br>
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+        <div class="metric-container">
+            <h4>🎯 Accuracy</h4>
+            <p>High-precision models</p>
+        </div>
+        <div class="metric-container">
+            <h4>⚡ Speed</h4>
+            <p>Real-time processing</p>
+        </div>
+        <div class="metric-container">
+            <h4>🌍 Coverage</h4>
+            <p>Multiple land types</p>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
