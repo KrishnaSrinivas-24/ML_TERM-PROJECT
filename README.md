@@ -14,7 +14,6 @@ This project provides a comprehensive analysis of multiple machine learning mode
 - 🔧 **Easy Deployment**: One-click app launch
 
 ## 📂 Project Structure
-
 ```
 .
 ├── app/
@@ -47,6 +46,7 @@ This project provides a comprehensive analysis of multiple machine learning mode
 ## 🛠️ Setup & Installation
 
 ### Prerequisites
+
 - Python 3.8 or higher
 - pip package manager
 - Git (optional)
@@ -145,6 +145,7 @@ Open your web browser and navigate to: `http://localhost:8501`
 ## 🛠️ Technical Details
 
 ### Architecture
+
 - **Frontend**: Streamlit with custom CSS styling
 - **Backend**: Python with scikit-learn and TensorFlow
 - **Image Processing**: OpenCV and PIL
@@ -152,6 +153,7 @@ Open your web browser and navigate to: `http://localhost:8501`
 - **Model Persistence**: Joblib and HDF5 formats
 
 ### Performance
+
 - **Image Processing**: Real-time feature extraction
 - **Model Inference**: Sub-second predictions
 - **Memory Efficient**: Optimized model loading
@@ -199,6 +201,7 @@ pip install -r requirements.txt --force-reinstall
 ## 📈 Performance Metrics
 
 The models are evaluated using:
+
 - **Accuracy**: Overall classification accuracy
 - **F1-Score**: Weighted F1-score for multi-class classification
 - **Confusion Matrix**: Detailed per-class performance

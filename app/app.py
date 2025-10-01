@@ -38,17 +38,19 @@ st.markdown("""
         margin-bottom: 0;
     }
     .feature-card {
-        background: white;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
         padding: 1.5rem;
         border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         margin: 1rem 0;
         border-left: 4px solid #667eea;
         transition: transform 0.2s ease;
     }
     .feature-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
     }
     .model-card {
         background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
@@ -108,11 +110,17 @@ st.markdown("""
         background: #f8f9ff;
     }
     .metric-container {
-        background: white;
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        color: white;
         padding: 1rem;
         border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         text-align: center;
+        transition: transform 0.2s ease;
+    }
+    .metric-container:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
     }
     .footer {
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
